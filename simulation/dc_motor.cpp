@@ -7,15 +7,15 @@ DCMotor::DCMotor(int forward_pin, int backward_pin, int power_pin)
 
 void DCMotor::forward_motion() {
     digitalWrite(_forward_pin, HIGH);
-    digitalWtite(_backward_pin, LOW);
+    digitalWrite(_backward_pin, LOW);
 }
 
 void DCMotor::backward_motion() {
     digitalWrite(_forward_pin, LOW);
-    digitalWtite(_backward_pin, HIGH);
+    digitalWrite(_backward_pin, HIGH);
 }
 
 void DCMotor::stop_motion() {
     digitalWrite(_forward_pin, LOW);
-    digitalWtite(_backward_pin, LOW);
+    digitalWrite(_backward_pin, LOW);
 }
