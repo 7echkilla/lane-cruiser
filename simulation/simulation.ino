@@ -20,7 +20,7 @@
 
 #define BAUD_RATE 9600
 
-AnalogJoystick analog_joystick(HORZ_PIN, VERT_PIN);
+AnalogJoystick analog_joystick(HORZ_PIN, VERT_PIN, JOYSTICK_MIN, JOYSTICK_MAX);
 InfraredProximitySensor ir_sensor_left(IR_L_PIN, IR_THRESHOLD), ir_sensor_right(IR_R_PIN, IR_THRESHOLD);
 UltrasonicSensor ultrasonic_sensor(TRIG_PIN, ECHO_PIN);
 
@@ -48,7 +48,7 @@ void loop() {
     // Serial.println(y_value);
 
     // Serial.println(ir_sensor_left.is_black());
-    Serial.println(ultrasonic_sensor.get_distance())
+    Serial.println(ultrasonic_sensor.get_distance());
 
     delay(100);
 }
