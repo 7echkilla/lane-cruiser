@@ -8,7 +8,8 @@ class AnalogJoystick {
         int get_y_value();
 
     private:
-        int _x_pin, _y_pin, _min, _max;
+        int _x_pin, _y_pin, _min_input, _max_input;
+        int _min_output = -2, _max_output = 2;
 };
 
 #endif

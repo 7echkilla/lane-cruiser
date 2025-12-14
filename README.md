@@ -1,5 +1,5 @@
-# Autonomous RC Car Control
-AutoRC is a project where two Arduino boards (Master and Slave) communicate via Bluetooth to control an RC car. The system has two modes:
+# Line-following RC Car
+This project for [Build It Challenge 2022](https://www.facebook.com/events/710362346658275?ref=newsfeed) involves a RC car controlled by two Arduino boards (Master and Slave), which communicate via Bluetooth. The system operates in two modes:
 - **Manual Mode**: Controlled by an analog joystick connected to the Master Arduino.
 - **Autonomous Mode**: The car follows a black tape on a white surface using IR sensors and avoids obstacles using a proximity sensor.
 
