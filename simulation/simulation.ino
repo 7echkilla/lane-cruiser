@@ -8,6 +8,7 @@
 // Analog joystick config
 #define HORZ_PIN A0
 #define VERT_PIN A1
+#define SEL_PIN 2
 #define JOYSTICK_MIN 0
 #define JOYSTICK_MAX 1023
 #define DEADZONE 0.12
@@ -28,7 +29,7 @@
 #define MOTOR_RB_PIN 9
 #define MOTOR_EN_PIN 11
 #define MIN_SPEED 30.0
-#define MAX_SPEED 255.0
+#define MAX_SPEED 250.0
 
 // Servo config
 #define SERVO_PIN 3
@@ -37,7 +38,7 @@
 
 #define BAUD_RATE 9600
 
-AnalogJoystick analog_joystick(HORZ_PIN, VERT_PIN, JOYSTICK_MIN, JOYSTICK_MAX);
+AnalogJoystick analog_joystick(HORZ_PIN, VERT_PIN, SEL_PIN, JOYSTICK_MAX);
 InfraredProximitySensor ir_left(IR_L_PIN, IR_THRESHOLD), ir_right(IR_R_PIN, IR_THRESHOLD);
 UltrasonicSensor ultrasonic_sensor(TRIG_PIN, ECHO_PIN);
 DCMotor motor_left(MOTOR_LF_PIN, MOTOR_LB_PIN, MOTOR_EN_PIN, MIN_SPEED, MAX_SPEED);
@@ -47,9 +48,6 @@ Servo servo;
 void setup() {
     pinMode(HORZ_PIN, INPUT);
     pinMode(VERT_PIN, INPUT);
-
-    pinMode(IR_L_PIN, INPUT);
-    pinMode(IR_R_PIN, INPUT);
 
     pinMode(ECHO_PIN, INPUT);
     pinMode(TRIG_PIN, OUTPUT);
@@ -64,7 +62,7 @@ void setup() {
     Serial.begin(BAUD_RATE);
 }
 
-void loop() {
+void manual_control() {
     float x_value = analog_joystick.get_x_value();
     float y_value = analog_joystick.get_y_value();    
     int angle = SERVO_MAX / 2;
@@ -99,4 +97,10 @@ void loop() {
         motor_left.drive_motor(left_value);
         motor_right.drive_motor(right_value);
     }
+}
+
+void loop() {
+    int mode = 0;
+    int sel_value = analog_joystick.get_sel_value();
+    Serial.println(sel_value);
 }
