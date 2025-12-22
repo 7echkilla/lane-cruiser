@@ -1,16 +1,11 @@
-#include "analog_joystick.h"
 #include "infrared_proximity_sensor.h"
 #include "ultrasonic_sensor.h"
 #include "dc_motor.h"
+#include <SoftwareSerial.h>
 #include <Arduino.h>
 #include <Servo.h>
 
 // Analog joystick config
-#define HORZ_PIN A0
-#define VERT_PIN A1
-#define SEL_PIN 2
-#define JOYSTICK_MIN 0      // Default min analog value
-#define JOYSTICK_MAX 1023   // Default max analog value
 #define DEADZONE 0.12       // Anticipated joystick deadzone [0.0-1.0]
 
 // IR sensor config
@@ -37,18 +32,24 @@
 #define SERVO_MIN 0         // Default min servo range
 #define SERVO_MAX 180       // Default max servo range
 
+// Bluetooth config
+#define RX_PIN 7
+#define TX_PIN 8
+
 #define BAUD_RATE 9600
 
-AnalogJoystick analog_joystick(HORZ_PIN, VERT_PIN, SEL_PIN, JOYSTICK_MAX);
 InfraredProximitySensor ir_left(IR_L_PIN, IR_THRESHOLD), ir_right(IR_R_PIN, IR_THRESHOLD);
 UltrasonicSensor ultrasonic_sensor(TRIG_PIN, ECHO_PIN);
 DCMotor motor_left(MOTOR_LF_PIN, MOTOR_LB_PIN, MOTOR_EN_PIN, MIN_SPEED, MAX_SPEED);
 DCMotor motor_right(MOTOR_RF_PIN, MOTOR_RB_PIN, MOTOR_EN_PIN, MIN_SPEED, MAX_SPEED);
+SoftwareSerial slave_bluetooth(RX_PIN, TX_PIN);
 Servo servo;
 
 void setup() {
     servo.attach(SERVO_PIN);
     Serial.begin(BAUD_RATE);
+    slave_bluetooth.begin(BAUD_RATE);
+    delay(1000);    // Wait for bluetooth module to initialise
 }
 
 void automatic_control() {
@@ -83,9 +84,10 @@ void automatic_control() {
     }
 }
 
-void manual_control() {
-    float x_value = analog_joystick.get_x_value();
-    float y_value = analog_joystick.get_y_value();    
+float x_value = 0.0;
+float y_value = 0.0;
+
+void manual_control() { 
     int angle = SERVO_MAX / 2;
 
     // Tank-like movement for spin
@@ -124,28 +126,32 @@ int control_mode = 0;
 int last_sel_value = HIGH;
 
 void loop() {
-    int sel_value = analog_joystick.get_sel_value();
-    
-    if (sel_value == LOW && last_sel_value == HIGH) {
-        // Toggle mode on falling edge joystick selector
-        control_mode = !control_mode;
-        if (control_mode == 0) {
+    // Check for incoming bluetooth data
+    if (slave_bluetooth.available()) {
+        String data = slave_bluetooth.readStringUntil('\n');
+        Serial.println("[INFO] Received: " + data);
+
+        if (data == "mode:0") {
+            control_mode = 0;
             Serial.println("[INFO] Automatic mode");
-        } else if (control_mode == 1) {
+        } else if (data == "mode:1") {
+            control_mode = 1;
             Serial.println("[INFO] Manual mode");
-        } else {
-            Serial.println("[WARN] Undefined mode");
+        } else if (control_mode == 1) {
+            // Expected joystick value format: x_value, y_value
+            int comma_index = data.indexOf(',');
+            if (comma_index > 0) {
+                x_value = data.substring(0, comma_index).toFloat();
+                y_value = data.substring(comma_index + 1).toFloat();
+
+                manual_control();
+            }
         }
     }
 
-    last_sel_value = sel_value;
-
-    // Ensure state unless toggled
     if (control_mode == 0) {
         automatic_control();
-    } else if (control_mode == 1) {
-        manual_control();
     }
 
-    delay(100);    
+    delay(100);
 }

@@ -3,61 +3,69 @@ This project for [Build It Challenge 2022](https://www.facebook.com/events/71036
 - **Manual Mode**: Controlled by an analog joystick connected to the Master Arduino.
 - **Autonomous Mode**: The car follows a black tape on a white surface using IR sensors and avoids obstacles using a proximity sensor.
 
-## Features
-- **Manual Mode**: The car can be controlled via an analog joystick (X and Y axis inputs) connected to the Master Arduino.
-- **Autonomous Mode**: The car follows a black tape on a white surface and avoids obstacles using:
-  - IR sensors on either side of the car to maintain its position relative to the tape.
-  - A front-facing proximity sensor to avoid obstacles.
+The Master Arduino controls the overall mode (manual or automatic) and sends joystick data to the Slave Arduino when in manual mode. The Slave Arduino uses the joystick data to drive the motors and control the steering (servo), and in automatic mode, it uses sensors to make decisions autonomously.
 
-## Components
-- 2x Arduino boards (Master and Slave)
-- Bluetooth module (HC-05/HC-06)
-- Analog joystick
-- Servo (for steering control)
-- DC motor (for driving the wheels)
-- 2x IR sensors (for tape detection)
-- Proximity sensor (for obstacle avoidance)
-- RC car chassis
-
-## Communication Protocol
-- The Master Arduino sends joystick data (X and Y analog values) over Bluetooth to the Slave Arduino.
-- The Slave Arduino receives this data and controls the RC car’s movement (steering and motor).
-- In Autonomous Mode, the Slave Arduino uses data from IR sensors to follow the black tape and the proximity sensor to avoid obstacles.
-
-## Project Structure
-AutoRC/\
+## Project Strucure
+/lane-cruiser\
 │\
-├── master/\
-│ ├── master.ino # Arduino Master Code\
-│ └── README.md # Documentation for Master\
+├── /[master](./master/) # Controller code (master arduino)\
+│ ├── [analog_joystick.h](./master/analog_joystick.h) # Header file for joystick class\
+│ ├── [analog_joystick.cpp](./master/analog_joystick.cpp) # Source code for joystick logic\
+│ └── [master.ino](./master/master.ino) # Main code for the master arduino\
 │\
-├── slave/\
-│ ├── slave.ino # Arduino Slave Code\
-│ └── README.md # Documentation for Slave\
+├── /[simulation](./simulation/)\
+│ ├── [analog_joystick.h](./master/analog_joystick.h) # Header file for joystick class\
+│ ├── [analog_joystick.cpp](./master/analog_joystick.cpp) # Source code for joystick logic\
+│ ├── [dc_motor.h](./simulation/dc_motor.h) # Header file for motor class\
+│ ├── [dc_motor.cpp](./simulation/dc_motor.cpp) # Source file for motor logic\
+│ ├── [infrared_proximity_sensor.h](./simulation/infrared_proximity_sensor.h) # Header file for ir sensor class\
+│ ├── [infrared_proximity_sensor.cpp](./simulation/infrared_proximity_sensor.cpp) # Source code for ir sensor logic\
+│ ├── [README.md](./simulation/README.md) # Documentation for CirkitDesigner project\
+│ ├── [simulation.ino](./simulation/simulation.ino) # Main code for the simulation\
+│ ├── [ultrasonic_sensor.h](./simulation/ultrasonic_sensor.h) # Header file for proximity sensor class\
+│ └── [ultrasonic_sensor.cpp](./simulation/ultrasonic_sensor.cpp) # Source code for proximity sensor class\
 │\
-├── docs/\
-│ └── wiring_diagrams/ # Circuit schematics and wiring diagrams\
+├── /[slave](./slave/) # RC car code (slave arduino)\
+│ ├── [dc_motor.h](./slave/dc_motor.h) # Header file for motor class\
+│ ├── [dc_motor.cpp](./slave/dc_motor.cpp) # Source file for motor logic\
+│ ├── [infrared_proximity_sensor.h](./slave/infrared_proximity_sensor.h) # Header file for ir sensor class\
+│ ├── [infrared_proximity_sensor.cpp](./slave/infrared_proximity_sensor.cpp) # Source code for ir sensor logic\
+│ ├── [slave.ino](./slave/slave.ino) # Main code for the slave arduino\
+│ ├── [ultrasonic_sensor.h](./slave/ultrasonic_sensor.h) # Header file for proximity sensor class\
+│ └── [ultrasonic_sensor.cpp](./slave/ultrasonic_sensor.cpp) # Source code for proximity sensor class\
 │\
-└── README.md
+└── [README.md](README.md)
 
-The files in this directory are organized as follows:
+The files are mainly organised as follows:
+- **analog_joystick.cpp**: This file contains the implementation for handling the analog joystick input. It simulates reading the joystick’s X and Y axis values and processes them into control signals for the RC car’s movement in manual mode.
+- **analog_joystick.h**: The header file for the analog_joystick.cpp implementation. It defines the functions and data structures necessary for handling joystick input.
+- **dc_motor.cpp**: This file contains the code to simulate the behavior of the DC motors used in the RC car. It includes functions to control the motor's speed and direction.
+- **dc_motor.h**: The header file for the dc_motor.cpp implementation. It defines the functions and constants related to motor control.
+- **infrared_proximity.cpp**: This file simulates the infrared proximity sensor used for obstacle detection. The sensor is used in automated mode to follow lines on the ground.
+- **infrared_proximity.h**: The header file for the infrared_proximity.cpp implementation. It defines the proximity sensor's interface for reading line-following (colour) status.
 
-analog_joystick.cpp: This file contains the implementation for handling the analog joystick input. It simulates reading the joystick’s X and Y axis values and processes them into control signals for the RC car’s movement in manual mode.
+## Prerequisites
+To get started with the project, ensure you have the following:
 
-analog_joystick.h: The header file for the analog_joystick.cpp implementation. It defines the functions and data structures necessary for handling joystick input.
+### Hardware Components
+- 2x Arduino boards ([Arduino Uno](https://core-electronics.com.au/arduino-uno-r3.html) or similar)
+- 2x Bluetooth modules ([HC-05](https://core-electronics.com.au/bluetooth-module-hc-05.html))
+- 1x [Analog joystick](https://core-electronics.com.au/analog-2-axis-thumb-joystick-with-select-button-breakout-board.html)
+- 1x [Servo](https://core-electronics.com.au/feetech-1-5kg-continuous-rotation-servo-fs90r.html) (for steering control)
+- 2x [DC motor](https://core-electronics.com.au/dc-motor-with-jumper-wire.html) (for driving the wheels)
+- 2x IR sensors ([LDR](https://www.makerstore.com.au/product/mb-elc-sen-ldr-mod/?srsltid=AfmBOopRZ7Rsb3HpoevAYln54rGLOHa5YdCcpsOy_uxabnCI0FHyX5HMPKc))
+- 1x Proximity sensor ([HC-SR04](https://core-electronics.com.au/hc-sr04-ultrasonic-module-distance-measuring-sensor.html))
+- 1x [Motor Controller](https://core-electronics.com.au/2a-dual-motor-controller.html)
+- 1x RC car chassis (see [article](https://www.hackster.io/mertarduino/wireless-arduino-motor-driver-and-joystick-controller-5e4a55) for inspiration)
 
-dc_motor.cpp: This file contains the code to simulate the behavior of the DC motors used in the RC car. It includes functions to control the motor's speed and direction.
+See [article](https://howtomechatronics.com/tutorials/arduino/how-to-configure-pair-two-hc-05-bluetooth-module-master-slave-commands/) to configure bluetooth modules in AT mode to enable communication.
 
-dc_motor.h: The header file for the dc_motor.cpp implementation. It defines the functions and constants related to motor control.
-
-infrared_proximity.cpp: This file simulates the infrared proximity sensor used for obstacle detection. The sensor will be used in automated mode to detect objects in the car's path or to follow lines on the ground.
-
-infrared_proximity.h: The header file for the infrared_proximity.cpp implementation. It defines the proximity sensor's interface for reading inputs like distance to obstacles or line-following status.
-
-simulation.ino: The main entry point for the simulation in Circkit Designer. This file includes setup and loop functions, with code specific to how the simulation should behave, such as simulating input from the joystick or infrared sensors. This file differs from the main project's Arduino sketch and is tailored to work within the Circkit Designer IDE environment.
+### Software Requirements
+- [Arduino IDE](https://support.arduino.cc/hc/en-us/articles/360019833020-Download-and-install-Arduino-IDE) (or similar) to compile and upload code to the boards
+- [CirkitDesigner](https://app.cirkitdesigner.com/) (optional) to simulate car behaviour as in [/simulation](./simulation/)
 
 ## Drive Controls
-For single joystick, where x/y = [-1, 1]:
+The project employs a combination of car and tank-like drive using a single joystick with x/y = [-1, 1]:
 ```cpp
 // tank-like control (in-place spin)
 float left = y + x;
