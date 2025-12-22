@@ -5,6 +5,9 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+// Analog joystick config
+#define DEADZONE 0.12       // Anticipated joystick deadzone [0.0-1.0]
+
 // IR sensor config
 #define IR_R_PIN A2
 #define IR_L_PIN A3 
@@ -43,7 +46,7 @@ SoftwareSerial slave_bluetooth(RX_PIN, TX_PIN);
 Servo servo;
 
 void setup() {
-    Servo.attach(SERVO_PIN)
+    servo.attach(SERVO_PIN);
     Serial.begin(BAUD_RATE);
     slave_bluetooth.begin(BAUD_RATE);
     delay(1000);    // Wait for bluetooth module to initialise
@@ -81,9 +84,10 @@ void automatic_control() {
     }
 }
 
-void manual_control() {
-    float x_value = analog_joystick.get_x_value();
-    float y_value = analog_joystick.get_y_value();    
+float x_value = 0.0;
+float y_value = 0.0;
+
+void manual_control() { 
     int angle = SERVO_MAX / 2;
 
     // Tank-like movement for spin
@@ -118,10 +122,36 @@ void manual_control() {
     }
 }
 
+int control_mode = 0;
+int last_sel_value = HIGH;
+
 void loop() {
-  // Check if data is available from the master
-  if (BTSerial.available()) {
-    String receivedData = BTSerial.readString(); // Read the incoming data
-    Serial.println("Received: " + receivedData);  // Print received data to Serial Monitor
-  }
+    // Check for incoming bluetooth data
+    if (slave_bluetooth.available()) {
+        String data = slave_bluetooth.readStringUntil('\n');
+        Serial.println("[INFO] Received: " + data);
+
+        if (data == "mode:0") {
+            control_mode = 0;
+            Serial.println("[INFO] Automatic mode");
+        } else if (data == "mode:1") {
+            control_mode = 1;
+            Serial.println("[INFO] Manual mode");
+        } else if (control_mode == 1) {
+            // Expected joystick value format: x_value, y_value
+            int comma_index = data.indexOf(',');
+            if (comma_index > 0) {
+                x_value = data.substring(0, comma_index).toFloat();
+                y_value = data.substring(comma_index + 1).toFloat();
+
+                manual_control();
+            }
+        }
+    }
+
+    if (control_mode == 0) {
+        automatic_control();
+    }
+
+    delay(100);
 }

@@ -8,7 +8,6 @@
 #define SEL_PIN 2
 #define JOYSTICK_MIN 0      // Default min analog value
 #define JOYSTICK_MAX 1023   // Default max analog value
-#define DEADZONE 0.12       // Anticipated joystick deadzone [0.0-1.0]
 
 // Bluetooth config
 #define RX_PIN 7
@@ -28,38 +27,11 @@ void setup() {
 void manual_control() {
     float x_value = analog_joystick.get_x_value();
     float y_value = analog_joystick.get_y_value();    
-    int angle = SERVO_MAX / 2;
 
-    // Tank-like movement for spin
-    if (fabs(y_value) < DEADZONE) {
-        // Steering angle: 0 (left) or 180 (right)
-        if (x_value > 0) {
-            servo.write(SERVO_MAX);
-        } else if (x_value < 0) {
-            servo.write(SERVO_MIN);
-        } 
-
-        motor_left.drive_motor(x_value);
-        motor_right.drive_motor(-x_value);
-    } else {
-        // Car-like behaviour (forward/backward + steering)
-        angle = constrain(round((x_value + 1) * (SERVO_MAX / 2)), SERVO_MIN, SERVO_MAX);
-        servo.write(angle);
-
-        // Calculated left/right motor values based on car-behaviour
-        float left_value = constrain(y_value + x_value * fabs(y_value), -1.0, 1.0);
-        float right_value = constrain(y_value - x_value * fabs(y_value), -1.0, 1.0);
-
-        // Reversed values for backward-diagonal motions
-        if (y_value < 0) {
-            float temp = left_value;
-            left_value = right_value;
-            right_value = temp;
-        }
-
-        motor_left.drive_motor(left_value);
-        motor_right.drive_motor(right_value);
-    }
+    // Send joystick X and Y values in a comma-separated format
+    master_bluetooth.print(x_value);
+    master_bluetooth.print(",");
+    master_bluetooth.println(y_value);
 }
 
 int control_mode = 0;
@@ -71,12 +43,12 @@ void loop() {
     if (sel_value == LOW && last_sel_value == HIGH) {
         // Toggle mode on falling edge joystick selector
         control_mode = !control_mode;
-        if (control_mode == LOW) {
+        if (control_mode == 0) {
             Serial.println("[INFO] Automatic mode");
-            master_bluetooth.println("0");
-        } else if (control_mode == HIGH) {
+            master_bluetooth.println("mode:0");
+        } else if (control_mode == 1) {
             Serial.println("[INFO] Manual mode");
-            master_bluetooth.println("1");
+            master_bluetooth.println("mode:1");
         } else {
             Serial.println("[WARN] Undefined mode");
         }
@@ -85,9 +57,9 @@ void loop() {
     last_sel_value = sel_value;
 
     // Ensure state unless toggled
-    if (control_mode == LOW) {
-        automatic_control();
-    } else if (control_mode == HIGH) {
+    if (control_mode == 0) {
+        // Do nothing
+    } else if (control_mode == 1) {
         manual_control();
     }
 

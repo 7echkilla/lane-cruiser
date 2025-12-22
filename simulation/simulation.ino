@@ -129,9 +129,9 @@ void loop() {
     if (sel_value == LOW && last_sel_value == HIGH) {
         // Toggle mode on falling edge joystick selector
         control_mode = !control_mode;
-        if (control_mode == LOW) {
+        if (control_mode == 0) {
             Serial.println("[INFO] Automatic mode");
-        } else if (control_mode == HIGH) {
+        } else if (control_mode == 1) {
             Serial.println("[INFO] Manual mode");
         } else {
             Serial.println("[WARN] Undefined mode");
@@ -141,9 +141,9 @@ void loop() {
     last_sel_value = sel_value;
 
     // Ensure state unless toggled
-    if (control_mode == LOW) {
+    if (control_mode == 0) {
         automatic_control();
-    } else if (control_mode == HIGH) {
+    } else if (control_mode == 1) {
         manual_control();
     }
 
